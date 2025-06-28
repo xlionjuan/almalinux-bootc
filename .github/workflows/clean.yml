@@ -1,0 +1,20 @@
+name: Cleanup Old Images
+on:
+  schedule:
+    - cron: "15 18 * * 2" # Runs at 18:15, only on Tuesday. 
+  workflow_dispatch:
+
+jobs:
+  delete-older-than-60:
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      packages: write
+    steps:
+      - name: Delete Images Older Than 60 Days
+        uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1
+        with:
+          packages: almalinux-bootc
+          older-than: 60 days
+          delete-orphaned-images: true
+          keep-n-tagged: 7
+          keep-n-untagged: 7

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:best-practices"],
+  "timezone": "Asia/Taipei",
+  "enabledManagers": ["github-actions"],
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["pin", "digest", "pinDigest","major", "minor", "patch"],
+      "automerge": true,
+      "labels": ["dependencies"]
+    }
+  ],
+  "schedule": [
+    "* 3-6 * * 6"
+  ]
+}

@@ -1,0 +1,139 @@
+name: Reusable Build and Push
+on:
+  workflow_call:
+    inputs:
+      path:
+        description: "The path of the Containerfile, eg. main"
+        required: true
+        type: string
+      push_to_ghcr:
+        description: "Push to ghcr.io"
+        required: false
+        type: boolean
+        default: true
+      max_space:
+        description: "Maximize build space"
+        required: false
+        type: boolean
+        default: false
+      tag:
+        description: Only one line
+        required: true
+        type: string
+        default: ""
+      extra_tags:
+        description: |
+          "Extra Tags, ONE TAG ONE LINE, ex:
+            type=raw,value=test
+            type=raw,value=py311
+            type=raw,value=py311-{{date 'YYYYMMDD'}}
+          "
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      # id-token: write # needed for signing the images with GitHub OIDC Token
+      # attestations: write
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      # - name: Install Cosign
+      #   uses: sigstore/cosign-installer@3454372f43399081ed03b604cb2d021dabca52bb # v3.8.2
+
+      # - name: Verify
+      #   shell: bash
+      #   run: |
+      #     set -oue pipefail
+      #     echo "---Grep image name---"
+      #     containerfile_path="${{ inputs.path }}/Containerfile"
+      #     image=$(grep -i '^FROM' "$containerfile_path" | awk '{print $2}')
+      #     echo "Image: "${image}""
+      #     echo ""
+      #     echo "Using Cosign to verify image..."
+      #     cosign verify \
+      #       --key https://raw.githubusercontent.com/ublue-os/ucore/refs/heads/main/cosign.pub \
+      #       "${image}"
+
+      - name: Maximize build space
+        if: ${{ inputs.max_space == true }}
+        uses: ublue-os/remove-unwanted-software@cc0becac701cf642c8f0a6613bbdaf5dc36b259e # v9
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5.7.0
+        with:
+          images: ghcr.io/${{ github.repository }}
+          flavor: |
+            latest=false
+          tags: |
+             type=raw,value=${{ inputs.tag }}-{{date 'YYYYMMDD'}},enable={{is_default_branch}}
+             type=raw,value=${{ inputs.tag }},enable={{is_default_branch}}
+             type=ref,event=pr
+             ${{ inputs.extra_tags }}
+          labels: |
+            io.artifacthub.package.readme-url=https://raw.githubusercontent.com/${{ github.repository }}/main/README.md
+            org.opencontainers.image.description=Custom AlmaLinux image, tag ${{ inputs.tag }}.
+            org.opencontainers.image.title=XLion-AlmaLinux-Bootc-${{ inputs.tag }}
+
+      - name: Log in to ghcr.io
+        if: ${{ inputs.push_to_ghcr == true }}
+        uses: redhat-actions/podman-login@4934294ad0449894bcd1e9f191899d7292469603 # v1.7
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ghcr.io
+
+      - name: Buildah Action
+        id: build-image
+        uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2.13
+        with:
+          context: ${{ inputs.path }}
+          containerfiles: ${{ inputs.path }}/Containerfile
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          archs: amd64
+          oci: true
+          extra-args:
+
+      - name: Push
+        id: push
+        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2.8
+        if: ${{ inputs.push_to_ghcr == true }}
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
+          registry: ghcr.io
+          extra-args: |
+            --compression-format=zstd
+
+      # - name: Sign the images with GitHub OIDC Token
+      #   if: ${{ inputs.push_to_ghcr == true }} && github.event_name != 'pull_request'
+      #   env:
+      #     DIGEST: ${{ steps.push.outputs.digest }}
+      #     TAGS: ${{ steps.meta.outputs.tags }}
+      #   run: |
+      #     images=""
+      #     for tag in ${TAGS}; do
+      #       images+="${tag}@${DIGEST} "
+      #     done
+      #     cosign sign --yes ${images}
+
+      # - name: Attest
+      #   if: ${{ inputs.push_to_ghcr == true }} && github.event_name != 'pull_request'
+      #   uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+      #   with:
+      #     subject-name: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
+      #     subject-digest: ${{ steps.push.outputs.digest }}
+      #     push-to-registry: true
