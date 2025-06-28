@@ -1,0 +1,11 @@
+FROM ghcr.io/xlionjuan/almalinux-bootc:base
+
+COPY build.sh /tmp/build.sh
+
+RUN mkdir -p /var/lib/alternatives && \
+    /tmp/build.sh && \
+    dnf clean all && \
+    rm -rf /var/log/* && \
+    ostree container commit
+
+RUN bootc container lint
