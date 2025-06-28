@@ -8,6 +8,6 @@ dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce
 
 dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-groupadd docker
+tee /usr/lib/sysusers.d/docker.conf <<<'g docker - -'
 
 systemctl enable docker
