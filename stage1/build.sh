@@ -20,7 +20,6 @@ dnf upgrade -y
 dnf install -y screen qemu-guest-agent vim htop wget tree git tailscale systemd-resolved ncdu
 
 systemctl enable tailscaled
-systemctl enable systemd-resolved
 
 # Inject files
 # ZRAM
@@ -29,8 +28,22 @@ echo '[zram0]
 zram-fraction = 1.0
 compression-algorithm = zstd' | tee /usr/local/lib/systemd/zram-generator.conf
 
+# KVM PTP setup
+echo "ptp_kvm" | tee /etc/modules-load.d/ptp_kvm.conf
+
 # Tailscale
 echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.d/99-tailscale.conf
 echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.d/99-tailscale.conf
 
-# ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+# systemd-resolved 
+# https://github.com/ublue-os/cayo/pull/90
+# /*
+# Ensure systemd-resolved is enabled
+# */
+cat >/usr/lib/systemd/system-preset/91-cayo-resolved.preset <<'EOF'
+enable systemd-resolved.service
+EOF
+systemctl preset systemd-resolved.service
+cat >/usr/lib/tmpfiles.d/cayo-resolved.conf <<'EOF'
+L /etc/resolv.conf - - - - ../run/systemd/resolve/stub-resolv.conf
+EOF

@@ -9,4 +9,4 @@ RUN mkdir -p /var/lib/alternatives && \
     rm -rf /var/log/* && \
     ostree container commit
 
-# RUN bootc container lint
+RUN bootc container lint
