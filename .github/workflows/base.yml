@@ -1,4 +1,4 @@
-name: main
+name: base
 on:
   workflow_dispatch:
   # schedule:
@@ -23,5 +23,5 @@ jobs:
     name: build
     uses: ./.github/workflows/reusable-build.yml
     with:
-      path: stage1
-      tag: stage1
+      path: base
+      tag: base
