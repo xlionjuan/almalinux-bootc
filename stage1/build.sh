@@ -22,4 +22,15 @@ dnf install -y screen qemu-guest-agent vim htop wget tree git tailscale systemd-
 systemctl enable tailscaled
 systemctl enable systemd-resolved
 
+# Inject files
+# ZRAM
+mkdir -p /usr/local/lib/systemd/
+echo '[zram0]
+zram-fraction = 1.0
+compression-algorithm = zstd' | tee /usr/local/lib/systemd/zram-generator.conf
+
+# Tailscale
+echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.d/99-tailscale.conf
+echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.d/99-tailscale.conf
+
 # ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
