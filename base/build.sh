@@ -19,7 +19,8 @@ dnf upgrade -y
 
 dnf install -y screen qemu-guest-agent vim htop wget tree git tailscale systemd-resolved ncdu
 
-systemctl enable tailscaled
+# Don't enable Tailscale by default since it is not used on every node
+# systemctl enable tailscaled
 
 # Inject files
 # ZRAM
