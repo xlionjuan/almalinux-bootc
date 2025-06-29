@@ -48,3 +48,7 @@ systemctl preset systemd-resolved.service
 cat >/usr/lib/tmpfiles.d/cayo-resolved.conf <<'EOF'
 L /etc/resolv.conf - - - - ../run/systemd/resolve/stub-resolv.conf
 EOF
+
+
+# Fix
+systemctl disable rpm-ostree-countme.timer
