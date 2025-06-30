@@ -17,7 +17,7 @@ dnf config-manager --add-repo https://pkgs.tailscale.com/stable/centos/10/tailsc
 dnf install -y https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packages/e/epel-release-10-6.el10_0.noarch.rpm
 dnf upgrade -y
 
-dnf install -y screen qemu-guest-agent vim htop wget tree zsh git tailscale systemd-resolved ncdu
+dnf install -y screen qemu-guest-agent wireguard-tools vim htop wget tree zsh git tailscale systemd-resolved ncdu
 
 # Don't enable Tailscale by default since it is not used on every node
 # systemctl enable tailscaled
