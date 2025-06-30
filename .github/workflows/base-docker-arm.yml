@@ -7,7 +7,7 @@ on:
     branches:
       - main
     paths:
-      - 'base-docker/**'
+      - 'base-docker-arm/**'
 
 permissions:
   contents: read
@@ -20,6 +20,6 @@ jobs:
     name: build
     uses: ./.github/workflows/reusable-build.yml
     with:
-      path: base-docker
+      path: base-docker-arm
       tag: base-docker-arm
       runner: ubuntu-24.04-arm
