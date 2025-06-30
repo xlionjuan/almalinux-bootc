@@ -6,6 +6,11 @@ on:
         description: "The path of the Containerfile, eg. main"
         required: true
         type: string
+      runner:
+        description: "Runner, use when need ARM64 runner"
+        required: false
+        type: string
+        default: ubuntu-latest
       push_to_ghcr:
         description: "Push to ghcr.io"
         required: false
@@ -37,7 +42,7 @@ permissions:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runner }}
     permissions:
       packages: write
       # id-token: write # needed for signing the images with GitHub OIDC Token
@@ -103,7 +108,6 @@ jobs:
           containerfiles: ${{ inputs.path }}/Containerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          archs: amd64
           oci: true
           extra-args:
 

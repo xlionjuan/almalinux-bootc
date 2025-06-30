@@ -32,23 +32,59 @@ compression-algorithm = zstd' | tee /usr/local/lib/systemd/zram-generator.conf
 # KVM PTP setup
 echo "ptp_kvm" | tee /etc/modules-load.d/ptp_kvm.conf
 
-# Tailscale
+# Sysctl.d
+## Tailscale
 echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.d/99-tailscale.conf
 echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.d/99-tailscale.conf
 
-# ZRAM Related
+## ZRAM Related
 echo 'vm.swappiness=180' | tee -a /etc/sysctl.d/99-zram.conf
 echo 'vm.overcommit_memory = 1' | tee -a /etc/sysctl.d/99-zram.conf
 
-# BBR
+## BBR
 echo 'net.core.default_qdisc=fq_codel' | tee -a /etc/sysctl.d/99-bbr-network.conf
 echo 'net.ipv4.tcp_congestion_control=bbr' | tee -a /etc/sysctl.d/99-bbr-network.conf
 
-# systemd-resolved 
-# https://github.com/ublue-os/cayo/pull/90
-# /*
-# Ensure systemd-resolved is enabled
-# */
+# Unit
+## Homebrew
+tee /usr/lib/systemd/system/brew-upgrade.service << EOF
+[Unit]
+Description=Upgrade Brew packages
+After=local-fs.target
+After=network-online.target
+ConditionPathIsSymbolicLink=/home/linuxbrew/.linuxbrew/bin/brew
+
+[Service]
+# Override the user if different UID/User
+User=1000
+Type=oneshot
+Environment=HOMEBREW_CELLAR=/home/linuxbrew/.linuxbrew/Cellar
+Environment=HOMEBREW_PREFIX=/home/linuxbrew/.linuxbrew
+Environment=HOMEBREW_REPOSITORY=/home/linuxbrew/.linuxbrew/Homebrew
+ExecStart=/usr/bin/bash -c "/home/linuxbrew/.linuxbrew/bin/brew upgrade"
+EOF
+
+tee /usr/lib/systemd/system/brew-upgrade.timer << EOF
+[Unit]
+Description=Timer for brew upgrade for on image brew
+Wants=network-online.target
+
+[Timer]
+OnBootSec=30min
+OnUnitInactiveSec=8h
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+
+# system-preset
+## systemd-resolved 
+## https://github.com/ublue-os/cayo/pull/90
+## /*
+## Ensure systemd-resolved is enabled
+## If don't want, sudo touch /etc/tmpfiles.d/cayo-resolved.conf
+## */
 cat >/usr/lib/systemd/system-preset/91-cayo-resolved.preset <<'EOF'
 enable systemd-resolved.service
 EOF
@@ -57,6 +93,11 @@ cat >/usr/lib/tmpfiles.d/cayo-resolved.conf <<'EOF'
 L /etc/resolv.conf - - - - ../run/systemd/resolve/stub-resolv.conf
 EOF
 
+cat >/usr/lib/systemd/system-preset/99-homebrew-autoupdate.preset <<'EOF'
+enable brew-upgrade.timer
+EOF
+
+systemctl preset brew-upgrade.timer
 
 # Fix
 systemctl disable rpm-ostree-countme.timer
