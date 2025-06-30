@@ -1,8 +1,8 @@
 name: base-docker
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: '30 2 * * 3'  # Runs at 02:30, only on Wednesday
+  schedule:
+    - cron: '40 2 * * 3'  # Runs at 02:40, only on Wednesday
   push:
     branches:
       - main

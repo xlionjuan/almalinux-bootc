@@ -93,7 +93,7 @@ cat >/usr/lib/tmpfiles.d/cayo-resolved.conf <<'EOF'
 L /etc/resolv.conf - - - - ../run/systemd/resolve/stub-resolv.conf
 EOF
 
-cat >/usr/lib/systemd/system-preset/99-homebrew-autoupdate.preset <<'EOF'
+cat >/usr/lib/systemd/system-preset/91-homebrew-autoupdate.preset <<'EOF'
 enable brew-upgrade.timer
 EOF
 
