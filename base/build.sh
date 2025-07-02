@@ -17,7 +17,7 @@ dnf config-manager --add-repo https://pkgs.tailscale.com/stable/centos/10/tailsc
 dnf install -y https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packages/e/epel-release-10-6.el10_0.noarch.rpm
 dnf upgrade -y
 
-dnf install -y screen qemu-guest-agent wireguard-tools vim htop wget tree zsh git tailscale systemd-resolved ncdu
+dnf install -y screen fail2ban qemu-guest-agent wireguard-tools vim htop wget tree zsh git tailscale systemd-resolved ncdu
 
 # Don't enable Tailscale by default since it is not used on every node
 # systemctl enable tailscaled
@@ -44,6 +44,40 @@ echo 'vm.overcommit_memory = 1' | tee -a /etc/sysctl.d/99-zram.conf
 ## BBR
 echo 'net.core.default_qdisc=fq_codel' | tee -a /etc/sysctl.d/99-bbr-network.conf
 echo 'net.ipv4.tcp_congestion_control=bbr' | tee -a /etc/sysctl.d/99-bbr-network.conf
+
+tee /etc/sysctl.d/99-net-opti.conf << EOF
+# Global socket buffer (default and max receive/send buffer size for all sockets)
+net.core.rmem_default = 524288         # Default receive buffer: 512 KB
+net.core.rmem_max = 16777216           # Max receive buffer: 16 MB
+net.core.wmem_default = 524288         # Default send buffer: 512 KB
+net.core.wmem_max = 16777216           # Max send buffer: 16 MB
+
+# TCP auto-tuning buffer limits (min, default, max)
+net.ipv4.tcp_rmem = 8192 262144 16777216    # TCP receive buffer: 8 KB / 256 KB / 16 MB
+net.ipv4.tcp_wmem = 8192 262144 16777216    # TCP send buffer: 8 KB / 256 KB / 16 MB
+
+# UDP minimum buffer size (per UDP socket)
+net.ipv4.udp_rmem_min = 16384          # Minimum UDP receive buffer: 16 KB (was 8 KB)
+net.ipv4.udp_wmem_min = 16384          # Minimum UDP send buffer: 16 KB (was 8 KB)
+
+# Network device packet backlog queue
+net.core.netdev_max_backlog = 8192     # Max number of packets allowed in the backlog queue (was 1024)
+EOF
+
+# Fail2ban SSH
+
+tee /etc/fail2ban/jail.d/50-sshd-preset.local  << EOF
+[sshd]
+enabled = true
+	 
+bantime = 7d
+bantime.increment = true
+bantime.maxtime = 365d
+ 
+findtime = 1d
+	 
+maxretry = 3
+EOF
 
 # Unit
 ## Homebrew
@@ -89,6 +123,7 @@ cat >/usr/lib/systemd/system-preset/91-cayo-resolved.preset <<'EOF'
 enable systemd-resolved.service
 EOF
 systemctl preset systemd-resolved.service
+## Link
 cat >/usr/lib/tmpfiles.d/cayo-resolved.conf <<'EOF'
 L /etc/resolv.conf - - - - ../run/systemd/resolve/stub-resolv.conf
 EOF
@@ -97,7 +132,12 @@ cat >/usr/lib/systemd/system-preset/91-homebrew-autoupdate.preset <<'EOF'
 enable brew-upgrade.timer
 EOF
 
+cat >/usr/lib/systemd/system-preset/91-fail2ban.preset <<'EOF'
+enable fail2ban.service
+EOF
+
 systemctl preset brew-upgrade.timer
+systemctl preset fail2ban.service
 
 # Fix
 systemctl disable rpm-ostree-countme.timer
