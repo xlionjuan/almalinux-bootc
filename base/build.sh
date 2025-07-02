@@ -66,6 +66,8 @@ EOF
 
 # Fail2ban SSH
 
+rm -f /etc/fail2ban/jail.d/00-firewalld.conf
+
 # tee /etc/fail2ban/jail.d/50-sshd-preset.local  << EOF
 # [sshd]
 # enabled = true
