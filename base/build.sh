@@ -45,16 +45,16 @@ echo 'vm.overcommit_memory = 1' | tee -a /etc/sysctl.d/99-zram.conf
 echo 'net.core.default_qdisc=fq_codel' | tee -a /etc/sysctl.d/99-bbr-network.conf
 echo 'net.ipv4.tcp_congestion_control=bbr' | tee -a /etc/sysctl.d/99-bbr-network.conf
 
-tee /etc/sysctl.d/99-net-opti.conf << EOF
+# tee /etc/sysctl.d/99-net-opti.conf << EOF
 
-net.core.rmem_default = 262144
-net.core.rmem_max = 4194304
-net.core.wmem_default = 262144
-net.core.wmem_max = 4194304
-net.core.netdev_max_backlog = 2048
-net.ipv4.udp_rmem_min = 8192
-net.ipv4.udp_wmem_min = 8192
-EOF
+# net.core.rmem_default = 262144
+# net.core.rmem_max = 4194304
+# net.core.wmem_default = 262144
+# net.core.wmem_max = 4194304
+# net.core.netdev_max_backlog = 2048
+# net.ipv4.udp_rmem_min = 8192
+# net.ipv4.udp_wmem_min = 8192
+# EOF
 
 # Fail2ban SSH
 
