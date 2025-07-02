@@ -69,7 +69,9 @@ EOF
 tee /etc/fail2ban/jail.d/50-sshd-preset.local  << EOF
 [sshd]
 enabled = true
-	 
+
+banaction = nftables-multiport
+
 bantime = 7d
 bantime.increment = true
 bantime.maxtime = 365d
