@@ -66,22 +66,27 @@ EOF
 
 # Fail2ban SSH
 
+restorecon -v /var/lib/fail2ban/fail2ban.sqlite3
+
 rm -f /etc/fail2ban/jail.d/00-firewalld.conf
 
-# tee /etc/fail2ban/jail.d/50-sshd-preset.local  << EOF
-# [sshd]
-# enabled = true
+tee /etc/fail2ban/jail.d/00-use-nftables.conf  << EOF
+[DEFAULT]
+banaction = nftables-multiport
+EOF
 
-# banaction = nftables-multiport
+tee /etc/fail2ban/jail.d/50-sshd-preset.conf  << EOF
+[sshd]
+enabled = true
 
-# bantime = 7d
-# bantime.increment = true
-# bantime.maxtime = 365d
+bantime = 7d
+bantime.increment = true
+bantime.maxtime = 365d
  
-# findtime = 1d
+findtime = 1d
 	 
-# maxretry = 3
-# EOF
+maxretry = 3
+EOF
 
 # Unit
 ## Homebrew
@@ -150,3 +155,10 @@ systemctl preset firewalld.service
 
 # Fix
 systemctl disable rpm-ostree-countme.timer
+
+mkdir -p /var/lib/setroubleshoot
+chown setroubleshoot:setroubleshoot /var/lib/setroubleshoot
+chmod 700 /var/lib/setroubleshoot
+tee /usr/lib/tmpfiles.d/50-fail2ban-selinux.conf <<'EOF'
+z /var/lib/fail2ban/fail2ban.sqlite3 0600 fail2ban fail2ban -
+EOF
