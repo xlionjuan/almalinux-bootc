@@ -10,14 +10,17 @@ echo "Creating symlinks to fix packages that install to /opt"
 mkdir -p "/var/opt"
 ln -s "/var/opt"  "/opt"
 
-dnf install -y 'dnf-command(config-manager)'
+dnf -y install 'dnf-command(config-manager)'
+ln -sf /usr/bin/dnf /usr/bin/yum
+curl -s https://install.crowdsec.net | sh
 
 dnf config-manager --enable crb
 dnf config-manager --add-repo https://pkgs.tailscale.com/stable/centos/10/tailscale.repo
-dnf install -y https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packages/e/epel-release-10-6.el10_0.noarch.rpm
-dnf upgrade -y
+dnf -y install https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packages/e/epel-release-10-6.el10_0.noarch.rpm
+dnf -y upgrade
 
-dnf install -y screen setroubleshoot audit fail2ban qemu-guest-agent wireguard-tools vim htop wget tree zsh git tailscale systemd-resolved ncdu
+dnf -y install crowdsec-firewall-bouncer-nftables
+dnf -y install screen setroubleshoot audit fail2ban qemu-guest-agent wireguard-tools vim htop wget tree zsh git tailscale systemd-resolved ncdu
 
 # Don't enable Tailscale by default since it is not used on every node
 # systemctl enable tailscaled
