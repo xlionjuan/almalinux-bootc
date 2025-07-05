@@ -6,3 +6,5 @@ RELEASE="$(rpm -E %almalinux)"
 
 dnf group -y install 'Development Tools'
 
+dnf -y install conntrack-tools
+
