@@ -2,7 +2,7 @@ name: base-arm
 on:
   workflow_dispatch:
   schedule:
-    - cron: '30 2 * * 3'  # Runs at 02:30, only on Wednesday
+    - cron: '30 2 6 * *'  # Runs at 02:30, on day 6 of the month
   pull_request:
     branches:
       - main

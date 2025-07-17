@@ -2,7 +2,7 @@ name: misc-arm
 on:
   workflow_dispatch:
   schedule:
-    - cron: '50 2 * * 3'  # Runs at 02:50, only on Wednesday
+    - cron: '50 2 6 * *'  # Runs at 02:50, on day 6 of the month
   push:
     branches:
       - main
