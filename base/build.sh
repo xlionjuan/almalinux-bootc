@@ -20,7 +20,7 @@ dnf -y install https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packag
 dnf -y upgrade
 
 dnf -y install crowdsec-firewall-bouncer-nftables
-dnf -y install screen setroubleshoot audit fail2ban qemu-guest-agent wireguard-tools duperemove vim htop wget tree zsh git tailscale systemd-resolved ncdu
+dnf -y install screen setroubleshoot audit fail2ban qemu-guest-agent wireguard-tools vim htop wget tree zsh git tailscale systemd-resolved ncdu
 
 # Don't enable Tailscale by default since it is not used on every node
 # systemctl enable tailscaled
