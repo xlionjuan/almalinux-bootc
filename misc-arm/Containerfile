@@ -1,4 +1,4 @@
-FROM ghcr.io/xlionjuan/almalinux-bootc:base-docker-arm@sha256:c3cc8ed0d44fd4849777f22c16914903baa20b29acd023d28a274ed614b045c1
+FROM ghcr.io/xlionjuan/almalinux-bootc:base-docker-arm@sha256:fb7288f57c7a7445173fad2fa41c39d0c6addf7f65ba9e5ced121c725feadcac
 
 COPY build.sh /tmp/build.sh
 
