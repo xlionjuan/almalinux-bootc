@@ -1,4 +1,4 @@
-FROM ghcr.io/xlionjuan/almalinux-bootc:base-arm@sha256:9eaaa6f2b3be5070546caa71b3844a0c46344047996f064538d49ade191ed7f4
+FROM ghcr.io/xlionjuan/almalinux-bootc:base-arm@sha256:2d84e436d0cecc9957d0ede11c1c91d8baa4f293ac4408cdfa31c4c3994764b0
 
 COPY build.sh /tmp/build.sh
 
