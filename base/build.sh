@@ -152,6 +152,13 @@ cat >/usr/lib/systemd/system-preset/10-no-firewalld.preset <<'EOF'
 disable firewalld.service
 EOF
 
+# NetworkManager
+## IPv6 tempaddr
+cat >/etc/NetworkManager/conf.d/50-ipv6-tempaddr.conf <<'EOF'
+[connection]
+ipv6.ip6-privacy=2
+EOF
+
 systemctl preset brew-upgrade.timer
 systemctl preset fail2ban.service
 systemctl preset firewalld.service
