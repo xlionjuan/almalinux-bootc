@@ -29,7 +29,7 @@ dnf -y install screen setroubleshoot audit fail2ban qemu-guest-agent wireguard-t
 # ZRAM
 mkdir -p /usr/local/lib/systemd/
 echo '[zram0]
-zram-fraction = 1.0
+zram-size = ram
 compression-algorithm = zstd' | tee /usr/local/lib/systemd/zram-generator.conf
 
 # KVM PTP setup
