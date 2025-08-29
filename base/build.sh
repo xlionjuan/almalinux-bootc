@@ -26,11 +26,20 @@ dnf -y install screen setroubleshoot audit fail2ban qemu-guest-agent wireguard-t
 # systemctl enable tailscaled
 
 # Inject files
-# ZRAM
-mkdir -p /usr/local/lib/systemd/
+## ZRAM
+mkdir -p /usr/local/lib/systemd/resolved.conf.d
 echo '[zram0]
 zram-size = ram
 compression-algorithm = zstd' | tee /usr/local/lib/systemd/zram-generator.conf
+## Resolved
+echo '[Resolve]
+DNSSEC=true
+DNSOverTLS=opportunistic
+FallbackDNS=9.9.9.9#dns.quad9.net
+FallbackDNS=149.112.112.112#dns.quad9.net
+FallbackDNS=2620:fe::fe#dns.quad9.net
+FallbackDNS=2620:fe::9#dns.quad9.net
+' | tee /usr/local/lib/systemd/resolved.conf.d/default-resolved-settings.conf
 
 # KVM PTP setup
 echo "ptp_kvm" | tee /etc/modules-load.d/ptp_kvm.conf
@@ -50,21 +59,26 @@ echo 'net.ipv4.tcp_congestion_control=bbr' | tee -a /etc/sysctl.d/99-bbr-network
 
 tee /etc/sysctl.d/99-net-opti.conf << EOF
 # Global socket buffer (default and max receive/send buffer size for all sockets)
-net.core.rmem_default = 524288         # Default receive buffer: 512 KB
-net.core.rmem_max = 16777216           # Max receive buffer: 16 MB
-net.core.wmem_default = 524288         # Default send buffer: 512 KB
-net.core.wmem_max = 16777216           # Max send buffer: 16 MB
+net.core.rmem_default = 262144         # Receive buffer: 256 KB
+net.core.rmem_max = 4194304            # Max receive buffer: 4 MB
+net.core.wmem_default = 262144         # Send buffer: 256 KB
+net.core.wmem_max = 4194304            # Max send buffer: 4 MB
 
 # TCP auto-tuning buffer limits (min, default, max)
-net.ipv4.tcp_rmem = 8192 262144 16777216    # TCP receive buffer: 8 KB / 256 KB / 16 MB
-net.ipv4.tcp_wmem = 8192 262144 16777216    # TCP send buffer: 8 KB / 256 KB / 16 MB
+net.ipv4.tcp_rmem = 4096 131072 4194304    # TCP receive buffer: 4 KB / 128 KB / 4 MB
+net.ipv4.tcp_wmem = 4096 131072 4194304    # TCP send buffer: 4 KB / 128 KB / 4 MB
 
 # UDP minimum buffer size (per UDP socket)
-net.ipv4.udp_rmem_min = 16384          # Minimum UDP receive buffer: 16 KB (was 8 KB)
-net.ipv4.udp_wmem_min = 16384          # Minimum UDP send buffer: 16 KB (was 8 KB)
+net.ipv4.udp_rmem_min = 8192          # Minimum UDP receive buffer: 8 KB
+net.ipv4.udp_wmem_min = 8192          # Minimum UDP send buffer: 8 KB
 
 # Network device packet backlog queue
 net.core.netdev_max_backlog = 8192     # Max number of packets allowed in the backlog queue (was 1024)
+
+net.ipv4.tcp_mtu_probing = 1 
+net.ipv4.tcp_ecn = 1      # ECN (Explicit Congestion Notification)
+net.ipv4.tcp_fastopen = 3 # Client + Server
+net.ipv4.tcp_rfc1337 = 1  # TCP TIME-WAIT assassination
 EOF
 
 # Fail2ban SSH
