@@ -16,7 +16,7 @@ curl -s https://install.crowdsec.net | sh
 
 dnf config-manager --enable crb
 dnf config-manager --add-repo https://pkgs.tailscale.com/stable/centos/10/tailscale.repo
-dnf -y install https://dl.fedoraproject.org/pub/epel/10/Everything/x86_64/Packages/e/epel-release-10-6.el10_0.noarch.rpm
+dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noarch.rpm
 dnf -y upgrade
 
 dnf -y install crowdsec-firewall-bouncer-nftables
