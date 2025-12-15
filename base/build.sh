@@ -44,6 +44,13 @@ FallbackDNS=2620:fe::9#dns.quad9.net
 # KVM PTP setup
 echo "ptp_kvm" | tee /etc/modules-load.d/ptp_kvm.conf
 
+# journalctl
+
+mkdir -p /usr/local/lib/systemd/journald.conf.d
+echo '[Journal]
+SystemMaxUse=50M
+' | tee /usr/local/lib/systemd/journald.conf.d/00-journal-size.conf
+
 # Sysctl.d
 ## Tailscale
 echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.d/99-tailscale.conf
