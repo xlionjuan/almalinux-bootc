@@ -1,0 +1,29 @@
+name: misc-arm
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '50 3 6 * *'  # Runs at 02:50, on day 6 of the month
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'misc/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'misc/**'
+
+permissions:
+  contents: read
+  packages: write
+  # id-token: write
+  # attestations: write
+
+jobs:
+  build:
+    name: build
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      path: misc
+      tag: misc

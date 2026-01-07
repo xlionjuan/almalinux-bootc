@@ -1,0 +1,11 @@
+FROM ghcr.io/xlionjuan/almalinux-bootc:base-docker-arm@sha256:f823c380d93bf2062e02377fa6eb2e68a300dbd27ffb97e8e2e2f1d228799fc8
+
+COPY build.sh /tmp/build.sh
+
+RUN mkdir -p /var/lib/alternatives && \
+    /tmp/build.sh && \
+    dnf clean all && \
+    rm -rf /var/log/* && \
+    ostree container commit
+
+RUN bootc container lint
