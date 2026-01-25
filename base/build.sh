@@ -42,7 +42,7 @@ FallbackDNS=2620:fe::9#dns.quad9.net
 ' | tee /usr/local/lib/systemd/resolved.conf.d/default-resolved-settings.conf
 
 # KVM PTP setup
-echo "ptp_kvm" | tee /etc/modules-load.d/ptp_kvm.conf
+echo "ptp_kvm" | tee /usr/lib/modules-load.d/ptp_kvm.conf
 
 # journalctl
 
@@ -52,19 +52,20 @@ SystemMaxUse=50M
 ' | tee /usr/local/lib/systemd/journald.conf.d/00-journal-size.conf
 
 # Sysctl.d
+mkdir -p /usr/local/lib/sysctl.d
 ## Tailscale
-echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.d/99-tailscale.conf
-echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.d/99-tailscale.conf
+echo 'net.ipv4.ip_forward = 1' | tee -a /usr/local/lib/sysctl.d/99-tailscale.conf
+echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /usr/local/lib/sysctl.d/99-tailscale.conf
 
 ## ZRAM Related
-echo 'vm.swappiness=180' | tee -a /etc/sysctl.d/99-zram.conf
-echo 'vm.overcommit_memory = 1' | tee -a /etc/sysctl.d/99-zram.conf
+echo 'vm.swappiness=180' | tee -a /usr/local/lib/sysctl.d/99-zram.conf
+echo 'vm.overcommit_memory = 1' | tee -a /usr/local/lib/sysctl.d/99-zram.conf
 
 ## BBR
-echo 'net.core.default_qdisc=fq_codel' | tee -a /etc/sysctl.d/99-bbr-network.conf
-echo 'net.ipv4.tcp_congestion_control=bbr' | tee -a /etc/sysctl.d/99-bbr-network.conf
+echo 'net.core.default_qdisc=fq_codel' | tee -a /usr/local/lib/sysctl.d/99-bbr-network.conf
+echo 'net.ipv4.tcp_congestion_control=bbr' | tee -a /usr/local/lib/sysctl.d/99-bbr-network.conf
 
-tee /etc/sysctl.d/99-net-opti.conf << EOF
+tee /usr/local/lib/sysctl.d/99-net-opti.conf << EOF
 # Global socket buffer (default and max receive/send buffer size for all sockets)
 net.core.rmem_default = 262144         # Receive buffer: 256 KB
 net.core.rmem_max = 4194304            # Max receive buffer: 4 MB
@@ -175,7 +176,7 @@ EOF
 
 # NetworkManager
 ## IPv6 tempaddr
-cat >/etc/NetworkManager/conf.d/50-ipv6-tempaddr.conf <<'EOF'
+cat >/usr/lib/NetworkManager/conf.d/50-ipv6-tempaddr.conf <<'EOF'
 [connection]
 ipv6.ip6-privacy=2
 EOF
