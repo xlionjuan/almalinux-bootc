@@ -1,5 +1,5 @@
 # FROM quay-oci-cache.xlion.dev/almalinuxorg/almalinux-bootc:10
-FROM quay.io/almalinuxorg/almalinux-bootc:10@sha256:868f2ea79ed8c6d80cbe748aad90f8a9b8952f48b2f0b2047af00a34997380d8
+FROM quay.io/almalinuxorg/almalinux-bootc:10@sha256:7d9ba8e63a7c5c1da90b77e25444fae651942de1a928826a4510c2e4b59e5b50
 
 COPY build.sh /tmp/build.sh
 
