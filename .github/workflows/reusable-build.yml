@@ -92,13 +92,13 @@ jobs:
             org.opencontainers.image.description=Custom AlmaLinux image, tag ${{ inputs.tag }}.
             org.opencontainers.image.title=XLion-AlmaLinux-Bootc-${{ inputs.tag }}
 
-      - name: Log in to ghcr.io
+      - name: Login ghcr.io
         if: ${{ inputs.push_to_ghcr == true }}
-        uses: redhat-actions/podman-login@4934294ad0449894bcd1e9f191899d7292469603 # v1.7
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          registry: ghcr.io
 
       - name: Buildah Action
         id: build-image
