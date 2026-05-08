@@ -10,6 +10,9 @@ echo "Creating symlinks to fix packages that install to /opt"
 mkdir -p "/var/opt"
 ln -s "/var/opt"  "/opt"
 
+# Force full update
+dnf -y upgrade
+
 dnf -y install 'dnf-command(config-manager)'
 ln -sf /usr/bin/dnf /usr/bin/yum
 curl -s https://install.crowdsec.net | sh
