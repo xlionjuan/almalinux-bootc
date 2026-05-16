@@ -11,7 +11,7 @@ mkdir -p "/var/opt"
 ln -s "/var/opt"  "/opt"
 
 # Force full update
-dnf -y upgrade
+#dnf -y upgrade
 
 dnf -y install 'dnf-command(config-manager)'
 ln -sf /usr/bin/dnf /usr/bin/yum
