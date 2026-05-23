@@ -67,6 +67,10 @@ fs.protected_hardlinks = 1
 fs.protected_symlinks = 1
 fs.protected_fifos = 2
 fs.protected_regular = 2
+kernel.perf_event_paranoid = 3
+kernel.sysrq = 0
+kernel.kexec_load_disabled = 1
+fs.suid_dumpable = 0
 EOF
 
 ## Network security (50-*: anti-spoofing, redirect protection, queue tuning)
@@ -101,11 +105,14 @@ net.ipv4.tcp_max_syn_backlog = 8192
 net.ipv4.tcp_syncookies = 1
 EOF
 
-## ZRAM (50-*)
+## VM memory (50-*: ZRAM, overcommit, dirty page tuning)
 printf '%s\n' \
   'vm.swappiness = 180' \
   'vm.overcommit_memory = 1' \
-  | tee /usr/local/lib/sysctl.d/50-zram.conf
+  'vm.dirty_background_ratio = 5' \
+  | tee /usr/local/lib/sysctl.d/50-vm-memory.conf
+
+rm -f /usr/local/lib/sysctl.d/50-zram.conf
 
 ## Routing (60-*: only for Tailscale subnet router / exit node / VM host)
 printf '%s\n' \
@@ -142,6 +149,17 @@ net.ipv4.tcp_mtu_probing = 1
 net.ipv4.tcp_ecn = 1
 net.ipv4.tcp_fastopen = 3
 net.ipv4.tcp_rfc1337 = 1
+
+# TCP keepalive — faster dead connection detection
+net.ipv4.tcp_keepalive_time = 600
+net.ipv4.tcp_keepalive_intvl = 60
+net.ipv4.tcp_keepalive_probes = 5
+
+# Disable slow start after idle — better burst traffic with BBR
+net.ipv4.tcp_slow_start_after_idle = 0
+
+# Socket ancillary data memory
+net.core.optmem_max = 262144
 EOF
 
 # Fail2ban SSH
