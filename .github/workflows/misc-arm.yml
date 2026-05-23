@@ -8,11 +8,13 @@ on:
       - main
     paths:
       - 'misc-arm/**'
+      - '.github/workflows/reusable-build.yml'
   push:
     branches:
       - main
     paths:
       - 'misc-arm/**'
+      - '.github/workflows/reusable-build.yml'
 
 permissions:
   contents: read
