@@ -67,9 +67,13 @@ fs.protected_hardlinks = 1
 fs.protected_symlinks = 1
 fs.protected_fifos = 2
 fs.protected_regular = 2
+# Restrict perf events to root only — prevent side-channel observation
 kernel.perf_event_paranoid = 3
+# Disable Magic SysRq — prevent console-level kernel commands
 kernel.sysrq = 0
+# Disable kexec — prevent loading a replacement kernel at runtime
 kernel.kexec_load_disabled = 1
+# No core dumps for setuid programs — avoid sensitive memory leak
 fs.suid_dumpable = 0
 EOF
 
@@ -145,9 +149,13 @@ net.ipv4.udp_wmem_min = 8192
 # Network device packet backlog queue
 net.core.netdev_max_backlog = 8192
 
+# PMTU probing for VPN/tunnel path MTU issues
 net.ipv4.tcp_mtu_probing = 1
+# ECN — passive accept (environment verified compatible)
 net.ipv4.tcp_ecn = 1
+# TFO — client+server (Caddy + AdGuard both benefit, TLS replay-safe)
 net.ipv4.tcp_fastopen = 3
+# RFC 1337 — prevent TIME-WAIT assassination
 net.ipv4.tcp_rfc1337 = 1
 
 # TCP keepalive — faster dead connection detection
