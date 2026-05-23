@@ -56,19 +56,65 @@ SystemMaxUse=50M
 
 # Sysctl.d
 mkdir -p /usr/local/lib/sysctl.d
-## Tailscale
-echo 'net.ipv4.ip_forward = 1' | tee -a /usr/local/lib/sysctl.d/99-tailscale.conf
-echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /usr/local/lib/sysctl.d/99-tailscale.conf
 
-## ZRAM Related
-echo 'vm.swappiness=180' | tee -a /usr/local/lib/sysctl.d/99-zram.conf
-echo 'vm.overcommit_memory = 1' | tee -a /usr/local/lib/sysctl.d/99-zram.conf
+## Kernel hardening (40-*: universal base — safe for all production servers)
+tee /usr/local/lib/sysctl.d/40-kernel-hardening.conf << 'EOF'
+kernel.dmesg_restrict = 1
+kernel.kptr_restrict = 2
+kernel.yama.ptrace_scope = 1
+kernel.unprivileged_bpf_disabled = 1
+fs.protected_hardlinks = 1
+fs.protected_symlinks = 1
+fs.protected_fifos = 2
+fs.protected_regular = 2
+EOF
 
-## BBR
-echo 'net.core.default_qdisc=fq' | tee -a /usr/local/lib/sysctl.d/99-bbr-network.conf
-echo 'net.ipv4.tcp_congestion_control=bbr' | tee -a /usr/local/lib/sysctl.d/99-bbr-network.conf
+## Network security (50-*: anti-spoofing, redirect protection, queue tuning)
+tee /usr/local/lib/sysctl.d/50-network-security.conf << 'EOF'
+# Loose reverse path filtering — safe for multi-homing / VPN / Tailscale
+net.ipv4.conf.all.rp_filter = 2
+net.ipv4.conf.default.rp_filter = 2
 
-tee /usr/local/lib/sysctl.d/99-net-opti.conf << EOF
+# Disable source routing
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv4.conf.default.accept_source_route = 0
+net.ipv6.conf.all.accept_source_route = 0
+net.ipv6.conf.default.accept_source_route = 0
+
+# Disable ICMP redirects (both accept and send)
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+net.ipv6.conf.default.accept_redirects = 0
+net.ipv4.conf.all.secure_redirects = 0
+net.ipv4.conf.default.secure_redirects = 0
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+
+# Log martian packets
+net.ipv4.conf.all.log_martians = 1
+net.ipv4.conf.default.log_martians = 1
+
+# TCP connection queue
+net.core.somaxconn = 4096
+net.ipv4.tcp_max_syn_backlog = 8192
+net.ipv4.tcp_syncookies = 1
+EOF
+
+## ZRAM (50-*)
+echo 'vm.swappiness=180' | tee /usr/local/lib/sysctl.d/50-zram.conf
+echo 'vm.overcommit_memory = 1' | tee /usr/local/lib/sysctl.d/50-zram.conf
+
+## Routing (60-*: only for Tailscale subnet router / exit node / VM host)
+echo 'net.ipv4.ip_forward = 1' | tee /usr/local/lib/sysctl.d/60-routing.conf
+echo 'net.ipv6.conf.all.forwarding = 1' | tee /usr/local/lib/sysctl.d/60-routing.conf
+
+## BBR with proper pacing (60-*)
+echo 'net.core.default_qdisc=fq' | tee /usr/local/lib/sysctl.d/60-bbr.conf
+echo 'net.ipv4.tcp_congestion_control=bbr' | tee /usr/local/lib/sysctl.d/60-bbr.conf
+
+## Network optimization (70-*: socket buffer tuning)
+tee /usr/local/lib/sysctl.d/70-net-optimize.conf << EOF
 # Global socket buffer (default and max receive/send buffer size for all sockets)
 net.core.rmem_default = 262144         # Receive buffer: 256 KB
 net.core.rmem_max = 4194304            # Max receive buffer: 4 MB
