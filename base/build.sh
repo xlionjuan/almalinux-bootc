@@ -65,7 +65,7 @@ echo 'vm.swappiness=180' | tee -a /usr/local/lib/sysctl.d/99-zram.conf
 echo 'vm.overcommit_memory = 1' | tee -a /usr/local/lib/sysctl.d/99-zram.conf
 
 ## BBR
-echo 'net.core.default_qdisc=fq_codel' | tee -a /usr/local/lib/sysctl.d/99-bbr-network.conf
+echo 'net.core.default_qdisc=fq' | tee -a /usr/local/lib/sysctl.d/99-bbr-network.conf
 echo 'net.ipv4.tcp_congestion_control=bbr' | tee -a /usr/local/lib/sysctl.d/99-bbr-network.conf
 
 tee /usr/local/lib/sysctl.d/99-net-opti.conf << EOF
