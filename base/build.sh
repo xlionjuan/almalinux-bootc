@@ -8,7 +8,7 @@ RELEASE="$(rpm -E %almalinux)"
 echo "Creating symlinks to fix packages that install to /opt"
 # Create symlink for /opt to /var/opt since it is not created in the image yet
 mkdir -p "/var/opt"
-ln -s "/var/opt"  "/opt"
+ln -s "/var/opt" "/opt"
 
 # Force full update
 #dnf -y upgrade
@@ -23,7 +23,9 @@ dnf -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-10.noar
 dnf -y upgrade
 
 dnf -y install crowdsec-firewall-bouncer-nftables
-dnf -y install screen setroubleshoot audit fail2ban qemu-guest-agent wireguard-tools vim htop wget tree zsh git tailscale systemd-resolved ncdu
+dnf -y install screen tmux setroubleshoot audit fail2ban qemu-guest-agent wireguard-tools vim htop wget tree zsh git tailscale systemd-resolved ncdu
+
+dnf -y install tcpdump wireshark-cli
 
 # Don't enable Tailscale by default since it is not used on every node
 # systemctl enable tailscaled
@@ -58,7 +60,7 @@ SystemMaxUse=50M
 mkdir -p /usr/local/lib/sysctl.d
 
 ## Kernel hardening (40-*: universal base — safe for all production servers)
-tee /usr/local/lib/sysctl.d/40-kernel-hardening.conf << 'EOF'
+tee /usr/local/lib/sysctl.d/40-kernel-hardening.conf <<'EOF'
 kernel.dmesg_restrict = 1
 kernel.kptr_restrict = 2
 kernel.yama.ptrace_scope = 1
@@ -78,7 +80,7 @@ fs.suid_dumpable = 0
 EOF
 
 ## Network security (50-*: anti-spoofing, redirect protection, queue tuning)
-tee /usr/local/lib/sysctl.d/50-network-security.conf << 'EOF'
+tee /usr/local/lib/sysctl.d/50-network-security.conf <<'EOF'
 # Loose reverse path filtering — safe for multi-homing / VPN / Tailscale
 net.ipv4.conf.all.rp_filter = 2
 net.ipv4.conf.default.rp_filter = 2
@@ -111,27 +113,27 @@ EOF
 
 ## VM memory (50-*: ZRAM, overcommit, dirty page tuning)
 printf '%s\n' \
-  'vm.swappiness = 180' \
-  'vm.overcommit_memory = 1' \
-  'vm.dirty_background_ratio = 5' \
-  | tee /usr/local/lib/sysctl.d/50-vm-memory.conf
+    'vm.swappiness = 180' \
+    'vm.overcommit_memory = 1' \
+    'vm.dirty_background_ratio = 5' |
+    tee /usr/local/lib/sysctl.d/50-vm-memory.conf
 
 rm -f /usr/local/lib/sysctl.d/50-zram.conf
 
 ## Routing (60-*: only for Tailscale subnet router / exit node / VM host)
 printf '%s\n' \
-  'net.ipv4.ip_forward = 1' \
-  'net.ipv6.conf.all.forwarding = 1' \
-  | tee /usr/local/lib/sysctl.d/60-routing.conf
+    'net.ipv4.ip_forward = 1' \
+    'net.ipv6.conf.all.forwarding = 1' |
+    tee /usr/local/lib/sysctl.d/60-routing.conf
 
 ## BBR with proper pacing (60-*)
 printf '%s\n' \
-  'net.core.default_qdisc = fq' \
-  'net.ipv4.tcp_congestion_control = bbr' \
-  | tee /usr/local/lib/sysctl.d/60-bbr.conf
+    'net.core.default_qdisc = fq' \
+    'net.ipv4.tcp_congestion_control = bbr' |
+    tee /usr/local/lib/sysctl.d/60-bbr.conf
 
 ## Network optimization (70-*: socket buffer tuning)
-tee /usr/local/lib/sysctl.d/70-net-optimize.conf << 'EOF'
+tee /usr/local/lib/sysctl.d/70-net-optimize.conf <<'EOF'
 # Global socket buffer (default and max receive/send buffer size for all sockets)
 net.core.rmem_default = 262144
 net.core.rmem_max = 4194304
@@ -176,27 +178,27 @@ restorecon -v /var/lib/fail2ban/fail2ban.sqlite3
 
 rm -f /etc/fail2ban/jail.d/00-firewalld.conf
 
-tee /etc/fail2ban/jail.d/00-use-nftables.conf  << EOF
+tee /etc/fail2ban/jail.d/00-use-nftables.conf <<EOF
 [DEFAULT]
 banaction = nftables-multiport
 EOF
 
-tee /etc/fail2ban/jail.d/50-sshd-preset.conf  << EOF
+tee /etc/fail2ban/jail.d/50-sshd-preset.conf <<EOF
 [sshd]
 enabled = true
 
 bantime = 7d
 bantime.increment = true
 bantime.maxtime = 365d
- 
+
 findtime = 1d
-	 
+
 maxretry = 3
 EOF
 
 # Unit
 ## Homebrew
-tee /usr/lib/systemd/system/brew-upgrade.service << EOF
+tee /usr/lib/systemd/system/brew-upgrade.service <<EOF
 [Unit]
 Description=Upgrade Brew packages
 After=local-fs.target
@@ -213,7 +215,7 @@ Environment=HOMEBREW_REPOSITORY=/home/linuxbrew/.linuxbrew/Homebrew
 ExecStart=/usr/bin/bash -c "/home/linuxbrew/.linuxbrew/bin/brew upgrade"
 EOF
 
-tee /usr/lib/systemd/system/brew-upgrade.timer << EOF
+tee /usr/lib/systemd/system/brew-upgrade.timer <<EOF
 [Unit]
 Description=Timer for brew upgrade for on image brew
 Wants=network-online.target
@@ -228,7 +230,7 @@ WantedBy=timers.target
 EOF
 
 # system-preset
-## systemd-resolved 
+## systemd-resolved
 ## https://github.com/ublue-os/cayo/pull/90
 ## /*
 ## Ensure systemd-resolved is enabled
