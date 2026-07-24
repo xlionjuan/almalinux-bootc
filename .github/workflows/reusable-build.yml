@@ -102,7 +102,7 @@ jobs:
 
       - name: Buildah Action
         id: build-image
-        uses: redhat-actions/buildah-build@5d8479758cc72ed82df28daba521d27e20ff8c8a # v3.0.0
+        uses: redhat-actions/buildah-build@27e5954dfd56a621f706827f2de689dc955e8711 # v3.0.1
         with:
           context: ${{ inputs.path }}
           containerfiles: ${{ inputs.path }}/Containerfile
