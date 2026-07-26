@@ -1,20 +1,19 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:best-practices"],
-  "timezone": "Asia/Taipei",
-  "enabledManagers": ["github-actions", "dockerfile"],
+  "extends": ["local>xlionjuan/renovatebot-presets"],
   "packageRules": [
     {
-      "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["pin", "digest", "pinDigest","major", "minor", "patch"],
-      "automerge": true,
-      "labels": ["dependencies"]
-    },
-    {
+      "description": "Automerge non-major Containerfile base-image updates only after the image build succeeds. Digest updates do not reliably support the shared three-day cooldown.",
       "matchManagers": ["dockerfile"],
-      "matchUpdateTypes": ["pin", "digest", "pinDigest", "minor", "patch"],
+      "matchUpdateTypes": [
+        "pin",
+        "digest",
+        "pinDigest",
+        "minor",
+        "patch"
+      ],
       "automerge": true,
-      "labels": ["base-image"]
+      "addLabels": ["base-image"]
     }
   ]
 }
