@@ -276,6 +276,6 @@ chown setroubleshoot:setroubleshoot /var/lib/setroubleshoot
 chmod 700 /var/lib/setroubleshoot
 tee /usr/lib/tmpfiles.d/50-fail2ban-selinux.conf <<'EOF'
 d /var/lib/fail2ban 0750 root root -
-C /var/lib/fail2ban/fail2ban.sqlite3 0600 root root -
-Z /var/lib/fail2ban/fail2ban.sqlite3 0600 root root -
+f /var/lib/fail2ban/fail2ban.sqlite3 0600 root root -
+z /var/lib/fail2ban/fail2ban.sqlite3 - - - -
 EOF
