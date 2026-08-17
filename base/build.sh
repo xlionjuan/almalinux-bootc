@@ -4,11 +4,8 @@ set -ouex pipefail
 
 RELEASE="$(rpm -E %almalinux)"
 
-# https://github.com/blue-build/modules/blob/bc0cfd7381680dc8d4c60f551980c517abd7b71f/modules/rpm-ostree/rpm-ostree.sh#L16
-echo "Creating symlinks to fix packages that install to /opt"
-# Create symlink for /opt to /var/opt since it is not created in the image yet
-mkdir -p "/var/opt"
-ln -s "/var/opt" "/opt"
+# https://bootc-dev.github.io/bootc/filesystem.html 
+systemctl enable ostree-state-overlay@opt.service
 
 # Force full update
 #dnf -y upgrade
