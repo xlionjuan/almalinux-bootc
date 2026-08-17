@@ -271,9 +271,6 @@ systemctl preset firewalld.service
 # Fix
 systemctl disable rpm-ostree-countme.timer
 
-mkdir -p /var/lib/setroubleshoot
-chown setroubleshoot:setroubleshoot /var/lib/setroubleshoot
-chmod 700 /var/lib/setroubleshoot
 tee /usr/lib/tmpfiles.d/50-fail2ban-selinux.conf <<'EOF'
 d /var/lib/fail2ban 0750 root root -
 f /var/lib/fail2ban/fail2ban.sqlite3 0600 root root -
