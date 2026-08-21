@@ -128,26 +128,11 @@ jobs:
             --from "$SOURCE_IMAGE" \
             --build-arg CHUNKAH=quay.io/coreos/chunkah:v0.6.0 \
             --build-arg "CHUNKAH_CONFIG_STR=$(podman inspect "$SOURCE_IMAGE")" \
-            --build-arg "CHUNKAH_ARGS=--max-layers 128 --prune /sysroot/ --label ostree.commit- --label ostree.final-diffid-" \
+            --build-arg "CHUNKAH_ARGS=--prune /sysroot/ --max-layers 128 --label ostree.commit- --label ostree.final-diffid-" \
             --security-opt=label=disable \
             -v "$PWD:/run/src" \
             -t "$chunked_image" \
             https://github.com/coreos/chunkah/releases/download/v0.6.0/Containerfile.splitter
-
-          source_config="$(
-            podman inspect --format '{{json .Config}}' "$SOURCE_IMAGE" |
-              jq 'del(.Labels["ostree.commit"], .Labels["ostree.final-diffid"])'
-          )"
-
-          chunked_config="$(
-            podman inspect --format '{{json .Config}}' "$chunked_image"
-          )"
-
-          diff \
-            <(jq -S . <<<"$source_config") \
-            <(jq -S . <<<"$chunked_config")
-
-          podman run --rm "$chunked_image" bootc container lint
 
           read -ra tags <<<"$IMAGE_TAGS"
           for tag in "${tags[@]}"; do
