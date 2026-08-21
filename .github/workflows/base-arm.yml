@@ -28,7 +28,7 @@ jobs:
     uses: ./.github/workflows/reusable-build.yml
     with:
       path: base
-      tag: |
-          base-arm
-          base-docker-arm
+      tag: base-arm
+      extra_tags: |
+          type=raw,value=base-docker
       runner: ubuntu-24.04-arm

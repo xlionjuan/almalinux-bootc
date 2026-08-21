@@ -28,6 +28,6 @@ jobs:
     uses: ./.github/workflows/reusable-build.yml
     with:
       path: base
-      tag: |
-          base
-          base-docker
+      tag: base
+      extra_tags: |
+          type=raw,value=base-docker
