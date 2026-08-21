@@ -4,7 +4,7 @@ set -ouex pipefail
 
 RELEASE="$(rpm -E %almalinux)"
 
-# https://bootc-dev.github.io/bootc/filesystem.html 
+# https://bootc-dev.github.io/bootc/filesystem.html
 systemctl enable ostree-state-overlay@opt.service
 
 # Force full update
@@ -273,3 +273,13 @@ d /var/lib/fail2ban 0750 root root -
 f /var/lib/fail2ban/fail2ban.sqlite3 0600 root root -
 z /var/lib/fail2ban/fail2ban.sqlite3 - - - -
 EOF
+
+########## Docker ##########
+
+dnf config-manager --add-repo https://download.docker.com/linux/alma/docker-ce.repo
+
+dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+tee /usr/lib/sysusers.d/docker.conf <<<'g docker - -'
+
+systemctl enable docker
