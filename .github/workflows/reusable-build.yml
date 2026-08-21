@@ -111,6 +111,36 @@ jobs:
           oci: true
           extra-args:
 
+      - name: Rechunk image with Chunkah
+        shell: bash
+        env:
+          SOURCE_IMAGE: ${{ steps.build-image.outputs.image-with-tag }}
+          IMAGE_TAGS: ${{ steps.build-image.outputs.tags }}
+        run: |
+          set -euo pipefail
+
+          chunked_image="localhost/chunkah-output:${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+          rm -rf out
+
+          buildah build \
+            --skip-unused-stages=false \
+            --from "$SOURCE_IMAGE" \
+            --build-arg CHUNKAH=quay.io/coreos/chunkah:v0.6.0 \
+            --build-arg "CHUNKAH_CONFIG_STR=$(podman inspect "$SOURCE_IMAGE")" \
+            --build-arg "CHUNKAH_ARGS=--prune /sysroot/ --max-layers 128 --label ostree.commit- --label ostree.final-diffid-" \
+            --security-opt=label=disable \
+            -v "$PWD:/run/src" \
+            -t "$chunked_image" \
+            https://github.com/coreos/chunkah/releases/download/v0.6.0/Containerfile.splitter
+
+          read -ra tags <<<"$IMAGE_TAGS"
+          for tag in "${tags[@]}"; do
+            buildah tag "$chunked_image" "$tag"
+          done
+
+          rm -rf out
+
       - name: Push
         id: push
         uses: redhat-actions/push-to-registry@94ade333c38ecc0e60e94785125d9a52ca423b37 # v3.0.0
