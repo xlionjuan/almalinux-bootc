@@ -134,10 +134,9 @@ jobs:
             -t "$chunked_image" \
             https://github.com/coreos/chunkah/releases/download/v0.6.0/Containerfile.splitter
 
-          read -ra tags <<<"$IMAGE_TAGS"
-          for tag in "${tags[@]}"; do
-            buildah tag "$chunked_image" "$tag"
-          done
+            while IFS= read -r tag; do
+              buildah tag "$chunked_image" "$tag"
+            done <<< "$IMAGE_TAGS"
 
           rm -rf out
 
