@@ -116,29 +116,37 @@ jobs:
         env:
           SOURCE_IMAGE: ${{ steps.build-image.outputs.image-with-tag }}
           IMAGE_TAGS: ${{ steps.build-image.outputs.tags }}
+          CHUNKAH_IMAGE: quay.io/coreos/chunkah:v0.6.0
         run: |
-          set -euo pipefail
+          CHUNKAH_OUTPUT_DIR="$(mktemp -d)"
+          CHUNKAH_CONFIG_FILE="$(mktemp)"
 
-          chunked_image="localhost/chunkah-output:${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          podman inspect "$SOURCE_IMAGE" > "$CHUNKAH_CONFIG_FILE"
 
-          rm -rf out
+          podman pull "$CHUNKAH_IMAGE"
 
-          buildah build \
-            --skip-unused-stages=false \
-            --from "$SOURCE_IMAGE" \
-            --build-arg CHUNKAH=quay.io/coreos/chunkah:v0.6.0 \
-            --build-arg "CHUNKAH_CONFIG_STR=$(podman inspect "$SOURCE_IMAGE")" \
-            --build-arg "CHUNKAH_ARGS=--prune /sysroot/ --max-layers 128 --label ostree.commit- --label ostree.final-diffid-" \
-            --security-opt=label=disable \
-            -v "$PWD:/run/src" \
-            -t "$chunked_image" \
-            https://github.com/coreos/chunkah/releases/download/v0.6.0/Containerfile.splitter
+          podman run --rm \
+            --pull=never \
+            --mount=type=image,src="$SOURCE_IMAGE",target=/chunkah \
+            -v "$CHUNKAH_CONFIG_FILE:/chunkah-config.json:ro" \
+            -v "$CHUNKAH_OUTPUT_DIR:/run/out" \
+            "$CHUNKAH_IMAGE" \
+            build \
+            --prune /sysroot/ \
+            --max-layers 480 \
+            --label ostree.commit- \
+            --label ostree.final-diffid- \
+            --config /chunkah-config.json \
+            --output oci:/run/out/chunked
 
-            while IFS= read -r tag; do
-              buildah tag "$chunked_image" "$tag"
-            done <<< "$IMAGE_TAGS"
+          CHUNKED_IMAGE="$(podman pull "oci:${CHUNKAH_OUTPUT_DIR}/chunked")"
 
-          rm -rf out
+          while IFS= read -r tag; do
+            podman tag "$CHUNKED_IMAGE" "$tag"
+          done <<< "$IMAGE_TAGS"
+
+          rm -f "$CHUNKAH_CONFIG_FILE"
+          rm -rf "$CHUNKAH_OUTPUT_DIR"
 
       - name: Push
         id: push
