@@ -29,4 +29,4 @@ jobs:
     with:
       path: misc-arm
       tag: misc-arm
-      runner: ubuntu-24.04-arm
+      runner: ubuntu-26.04-arm
