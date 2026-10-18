@@ -41,7 +41,7 @@ FallbackDNS=9.9.9.9#dns.quad9.net
 FallbackDNS=149.112.112.112#dns.quad9.net
 FallbackDNS=2620:fe::fe#dns.quad9.net
 FallbackDNS=2620:fe::9#dns.quad9.net
-' | tee /usr/local/lib/systemd/resolved.conf.d/default-resolved-settings.conf
+' | tee /usr/local/lib/systemd/resolved.conf.d/99-default-resolved-settings.conf
 
 # KVM PTP setup
 echo "ptp_kvm" | tee /usr/lib/modules-load.d/ptp_kvm.conf
